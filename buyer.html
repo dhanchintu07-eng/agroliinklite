@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buyer Feed - AgroLink</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ========================================
+       BUYER FEED PAGE
+       ======================================== -->
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="index.html" class="navbar-logo">Agro<span>Link</span></a>
+        
+        <div class="navbar-menu">
+          <a href="#" onclick="openSecurityDashboard()">🔒 Security</a>
+          <a href="#" onclick="openMyFavorites()">❤️ Favorites</a>
+          <a href="#" onclick="openTransactions()">📊 Transactions</a>
+          <div class="user-info" id="userInfo">
+            <span id="userName">Buyer</span>
+            <span class="user-badge" id="userRole">Verified</span>
+          </div>
+          <button class="btn btn-secondary btn-small" onclick="handleLogout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <div style="background: linear-gradient(135deg, var(--primary-green), var(--dark-green)); color: white; padding: 40px 0; text-align: center;">
+    <div class="container">
+      <h1 style="font-size: 36px; margin-bottom: 10px;">🌾 Fresh From Farms</h1>
+      <p style="font-size: 18px; opacity: 0.95;">Connect directly with verified farmers and get fresh produce at fair prices</p>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="container" style="padding: 40px 0;">
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalFarmers">0</div>
+        <div class="stat-label">Available Farmers</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number" id="totalProducts">0</div>
+        <div class="stat-label">Fresh Products</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number" id="myInteractions">0</div>
+        <div class="stat-label">Your Interactions</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number" id="myFavorites">0</div>
+        <div class="stat-label">Favorite Farmers</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="container" style="margin-bottom: 30px;">
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); display: flex; gap: 15px; flex-wrap: wrap;">
+      <input 
+        type="text" 
+        id="searchCrop" 
+        placeholder="🔍 Search crops..." 
+        style="flex: 1; min-width: 200px; padding: 10px 16px; border: 2px solid var(--border-color); border-radius: 8px;"
+        onkeyup="filterFeed()"
+      >
+      
+      <select 
+        id="filterStatus" 
+        style="padding: 10px 16px; border: 2px solid var(--border-color); border-radius: 8px;"
+        onchange="filterFeed()"
+      >
+        <option value="">All Status</option>
+        <option value="ready">Ready to Sell</option>
+        <option value="growing">Growing</option>
+        <option value="seasonal">Seasonal</option>
+      </select>
+
+      <button class="btn btn-primary" onclick="sortByPopular()" style="padding: 10px 20px;">
+        ⭐ Most Popular
+      </button>
+
+      <button class="btn btn-secondary" onclick="resetFilter()" style="padding: 10px 20px;">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Feed -->
+  <div class="container feed">
+    <div id="feedContainer" class="feed-single">
+      <!-- Feed cards will be dynamically inserted here -->
+    </div>
+
+    <div id="noListings" style="text-align: center; padding: 60px 20px; color: var(--text-light);">
+      <p style="font-size: 20px; margin-bottom: 10px;">🌱 No products available yet</p>
+      <p>Check back soon for fresh produce from verified farmers!</p>
+    </div>
+  </div>
+
+  <!-- Security Dashboard Modal -->
+  <div id="securityModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+      <h2>🔒 Security Dashboard</h2>
+
+      <div style="margin-top: 20px;">
+        <h3 style="margin-bottom: 15px; color: var(--primary-green);">Account Security Status</h3>
+
+        <div class="security-card">
+          <h3>✅ Authentication Status</h3>
+          <div class="security-status">
+            <div class="status-indicator"></div>
+            <span>JWT Token: Active & Valid</span>
+          </div>
+        </div>
+
+        <div class="security-card">
+          <h3>✅ Data Encryption</h3>
+          <div class="security-status">
+            <div class="status-indicator"></div>
+            <span>All communications encrypted</span>
+          </div>
+        </div>
+
+        <div class="security-card">
+          <h3>✅ Transaction Verification</h3>
+          <div class="security-status">
+            <div class="status-indicator"></div>
+            <span>Blockchain-like verification active</span>
+          </div>
+        </div>
+
+        <h3 style="margin: 30px 0 15px; color: var(--primary-green);">Recent Activity</h3>
+        <div id="loginHistory" style="max-height: 250px; overflow-y: auto;">
+          <!-- Login history will be inserted here -->
+        </div>
+
+        <h3 style="margin: 30px 0 15px; color: var(--primary-green);">⚠️ Suspicious Activities</h3>
+        <div id="suspiciousActivities" style="max-height: 200px; overflow-y: auto;">
+          <!-- Suspicious activities will be inserted here -->
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="closSecurityDashboard()" style="margin-top: 30px;">Close</button>
+    </div>
+  </div>
+
+  <!-- Contacts Modal -->
+  <div id="contactModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h2>📞 Contact Farmer</h2>
+      
+      <div id="contactInfo" style="margin: 20px 0;">
+        <!-- Contact details will be inserted here -->
+      </div>
+
+      <div class="form-group">
+        <label>Your Message</label>
+        <textarea id="contactMessage" placeholder="Tell the farmer about your interest..."></textarea>
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="sendContact()">Send Message</button>
+      <button class="btn btn-secondary btn-block" onclick="closeContact()" style="margin-top: 10px;">Close</button>
+    </div>
+  </div>
+
+  <!-- My Favorites Modal -->
+  <div id="favoritesModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 700px;">
+      <h2>❤️ My Favorite Farmers</h2>
+
+      <div id="favoritesList" style="margin-top: 20px; max-height: 500px; overflow-y: auto;">
+        <!-- Favorites will be inserted here -->
+      </div>
+
+      <button class="btn btn-primary" onclick="closeFavorites()" style="margin-top: 30px;">Close</button>
+    </div>
+  </div>
+
+  <!-- Transactions Modal -->
+  <div id="transactionsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 700px;">
+      <h2>📊 My Transactions</h2>
+
+      <div id="transactionsList" style="margin-top: 20px; max-height: 500px; overflow-y: auto;">
+        <!-- Transactions will be inserted here -->
+      </div>
+
+      <button class="btn btn-primary" onclick="closeTransactions()" style="margin-top: 30px;">Close</button>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    // ========================================
+    // BUYER FEED LOGIC
+    // ========================================
+
+    let allListings = [];
+    let likedListings = new Set();
+    let currentContactListing = null;
+
+    // Initialize page
+    function initBuyerPage() {
+      const user = AuthSystem.getCurrentUser();
+
+      if (!user || user.role !== 'buyer') {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Display user info
+      document.getElementById('userName').textContent = user.name;
+
+      // Load listings
+      loadFeed();
+      loadLikedListings();
+      updateStatistics();
+    }
+
+    // Load all listings from farmers
+    function loadFeed() {
+      allListings = FarmerSystem.getAllListings();
+
+      if (allListings.length === 0) {
+        document.getElementById('feedContainer').style.display = 'none';
+        document.getElementById('noListings').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('feedContainer').style.display = 'block';
+      document.getElementById('noListings').style.display = 'none';
+
+      displayFeed(allListings);
+    }
+
+    // Display feed cards
+    function displayFeed(listings) {
+      const container = document.getElementById('feedContainer');
+      container.innerHTML = '';
+
+      listings.forEach((listing, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.animationDelay = (index * 0.1) + 's';
+
+        const isLiked = likedListings.has(listing.id);
+
+        card.innerHTML = `
+          <img src="${listing.cropImage}" class="card-image" alt="${listing.cropName}">
+          
+          <div class="card-content">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+              <div>
+                <h3 class="card-title">${listing.cropName}</h3>
+                <p class="card-subtitle">👨‍🌾 ${listing.farmerName} • 📍 ${listing.location}</p>
+              </div>
+              <span class="badge badge-verified">${listing.status === 'ready' ? '✅ Ready' : '🌱 Growing'}</span>
+            </div>
+
+            <div class="card-info">
+              <div class="info-item">
+                <div class="info-item-label">Quantity</div>
+                <div class="info-item-value">${listing.quantity || 'N/A'} kg</div>
+              </div>
+              
+              <div class="info-item">
+                <div class="info-item-label">Price</div>
+                <div class="info-item-value">₹${listing.price || 'N/A'}/kg</div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-item-label">Status</div>
+                <div class="info-item-value">${listing.status}</div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-item-label">Likes</div>
+                <div class="info-item-value" id="likes-${listing.id}">❤️ ${listing.likes || 0}</div>
+              </div>
+            </div>
+
+            ${listing.description ? `<p style="color: var(--text-light); margin-bottom: 15px; font-size: 14px;">${listing.description}</p>` : ''}
+
+            <div style="background: var(--light-green); padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+              <p style="font-size: 11px; color: var(--primary-green); font-weight: 600;">
+                ⛓️ Verified Transaction Hash: <br>${listing.transactionHash.substring(0, 25)}...
+              </p>
+            </div>
+
+            <div class="card-actions">
+              <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${listing.id}')">
+                ❤️ Like (${listing.likes || 0})
+              </button>
+              <button class="action-btn" onclick="shareContact('${listing.id}')">
+                🔗 Share
+              </button>
+              <button class="action-btn" onclick="openContact('${listing.id}')">
+                📞 Contact
+              </button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Toggle like
+    function toggleLike(listingId) {
+      const listing = allListings.find(l => l.id === listingId);
+
+      if (!listing) return;
+
+      if (likedListings.has(listingId)) {
+        // Unlike
+        likedListings.delete(listingId);
+        listing.likes = Math.max(0, (listing.likes || 1) - 1);
+      } else {
+        // Like
+        likedListings.add(listingId);
+        FarmerSystem.likeListing(listingId);
+        listing.likes = (listing.likes || 0) + 1;
+        
+        // Record transaction
+        const user = AuthSystem.getCurrentUser();
+        TransactionSystem.recordInteraction(user.id, listingId, 'like');
+      }
+
+      // Save likes to localStorage
+      localStorage.setItem('likedListings', JSON.stringify(Array.from(likedListings)));
+
+      // Update FarmerSystem storage
+      const listings = JSON.parse(localStorage.getItem('farmerListings')) || [];
+      const idx = listings.findIndex(l => l.id === listingId);
+      if (idx !== -1) {
+        listings[idx].likes = listing.likes;
+        localStorage.setItem('farmerListings', JSON.stringify(listings));
+      }
+
+      // Update display
+      updateStatistics();
+      displayFeed(allListings);
+    }
+
+    // Load previously liked listings
+    function loadLikedListings() {
+      const likedStr = localStorage.getItem('likedListings');
+      if (likedStr) {
+        likedListings = new Set(JSON.parse(likedStr));
+      }
+    }
+
+    // Share contact info
+    function shareContact(listingId) {
+      const listing = allListings.find(l => l.id === listingId);
+
+      if (!listing) return;
+
+      const text = `Check out ${listing.cropName} from ${listing.farmerName} at ${listing.location}! Available on AgroLink!`;
+
+      navigator.clipboard.writeText(text);
+      UIUtils.showToast('Listing shared! (Copied to clipboard)', 'success');
+
+      // Record transaction
+      const user = AuthSystem.getCurrentUser();
+      TransactionSystem.recordInteraction(user.id, listingId, 'share');
+    }
+
+    // Open contact modal
+    function openContact(listingId) {
+      const listing = allListings.find(l => l.id === listingId);
+
+      if (!listing) return;
+
+      currentContactListing = listing;
+
+      document.getElementById('contactInfo').innerHTML = `
+        <div style="background: var(--light-green); padding: 20px; border-radius: 8px;">
+          <h3 style="color: var(--primary-green); margin-bottom: 10px;">📞 ${listing.farmerName}</h3>
+          <p style="margin-bottom: 8px;"><strong>Crop:</strong> ${listing.cropName}</p>
+          <p style="margin-bottom: 8px;"><strong>Location:</strong> ${listing.location}</p>
+          <p style="margin-bottom: 8px;"><strong>Phone:</strong> ${listing.contact}</p>
+          <p style="margin-bottom: 0;"><strong>Price:</strong> ₹${listing.price}/kg</p>
+        </div>
+      `;
+
+      document.getElementById('contactModal').style.display = 'flex';
+    }
+
+    function closeContact() {
+      document.getElementById('contactModal').style.display = 'none';
+      document.getElementById('contactMessage').value = '';
+    }
+
+    function sendContact() {
+      const message = document.getElementById('contactMessage').value.trim();
+
+      if (!message) {
+        UIUtils.showToast('Please enter a message', 'warning');
+        return;
+      }
+
+      if (!currentContactListing) return;
+
+      const user = AuthSystem.getCurrentUser();
+
+      // Record transaction
+      TransactionSystem.recordInteraction(user.id, currentContactListing.id, 'contact');
+
+      UIUtils.showToast(`Message sent to ${currentContactListing.farmerName}! They will contact you soon.`, 'success');
+
+      closeContact();
+      updateStatistics();
+    }
+
+    // Filter and search
+    function filterFeed() {
+      const searchTerm = document.getElementById('searchCrop').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+
+      const filtered = allListings.filter(listing => {
+        const matchesSearch = listing.cropName.toLowerCase().includes(searchTerm) ||
+                            listing.location.toLowerCase().includes(searchTerm);
+        const matchesStatus = !statusFilter || listing.status === statusFilter;
+
+        return matchesSearch && matchesStatus;
+      });
+
+      if (filtered.length === 0) {
+        document.getElementById('feedContainer').innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--text-light);">
+            <p style="font-size: 18px;">No products found matching your search</p>
+          </div>
+        `;
+      } else {
+        displayFeed(filtered);
+      }
+    }
+
+    function resetFilter() {
+      document.getElementById('searchCrop').value = '';
+      document.getElementById('filterStatus').value = '';
+      loadFeed();
+    }
+
+    function sortByPopular() {
+      const sorted = [...allListings].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      displayFeed(sorted);
+    }
+
+    // Security Dashboard
+    function openSecurityDashboard() {
+      const modal = document.getElementById('securityModal');
+      modal.style.display = 'flex';
+
+      const logs = AuthSystem.getLoginLogs().slice(-10).reverse();
+      const historyContainer = document.getElementById('loginHistory');
+
+      if (logs.length === 0) {
+        historyContainer.innerHTML = '<p style="color: var(--text-light);">No activity logged</p>';
+      } else {
+        historyContainer.innerHTML = logs.map(log => `
+          <div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <p style="font-size: 14px; margin-bottom: 5px;">
+              <strong>${log.type.toUpperCase()}</strong> - ${log.success ? '✅' : '❌'}
+            </p>
+            <p style="font-size: 12px; color: var(--text-light);">
+              ${UIUtils.formatDate(log.timestamp)}
+            </p>
+          </div>
+        `).join('');
+      }
+
+      const suspicious = AuthSystem.getSuspiciousActivities();
+      const suspContainer = document.getElementById('suspiciousActivities');
+
+      if (suspicious.length === 0) {
+        suspContainer.innerHTML = '<p style="color: var(--primary-green);">✅ No suspicious activities</p>';
+      } else {
+        suspContainer.innerHTML = suspicious.slice(-5).map(log => `
+          <div style="padding: 10px; background: #fee; border-radius: 6px; margin-bottom: 8px;">
+            <p style="font-size: 12px; color: #e74c3c;">⚠️ ${log.reason}</p>
+            <p style="font-size: 11px; color: var(--text-light);">${UIUtils.formatDate(log.timestamp)}</p>
+          </div>
+        `).join('');
+      }
+    }
+
+    function closSecurityDashboard() {
+      document.getElementById('securityModal').style.display = 'none';
+    }
+
+    // My Favorites
+    function openMyFavorites() {
+      const modal = document.getElementById('favoritesModal');
+      modal.style.display = 'flex';
+
+      const favoriteFarmers = {};
+
+      likedListings.forEach(listingId => {
+        const listing = allListings.find(l => l.id === listingId);
+        if (listing) {
+          if (!favoriteFarmers[listing.farmerId]) {
+            favoriteFarmers[listing.farmerId] = {
+              farmerId: listing.farmerId,
+              farmerName: listing.farmerName,
+              location: listing.location,
+              listings: []
+            };
+          }
+          favoriteFarmers[listing.farmerId].listings.push(listing);
+        }
+      });
+
+      const container = document.getElementById('favoritesList');
+
+      if (Object.keys(favoriteFarmers).length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 40px;">No favorite farmers yet. Like some listings!</p>';
+      } else {
+        container.innerHTML = Object.values(favoriteFarmers).map(farmer => `
+          <div style="background: var(--light-green); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h3 style="color: var(--primary-green); margin-bottom: 10px;">👨‍🌾 ${farmer.farmerName}</h3>
+            <p style="font-size: 14px; margin-bottom: 10px;">📍 ${farmer.location}</p>
+            <p style="font-size: 14px; color: var(--text-light);">
+              ${farmer.listings.length} liked product(s)
+            </p>
+            <button class="action-btn" onclick="filterByFarmer('${farmer.farmerId}')" style="margin-top: 10px; width: 100%;">
+              View All Listings
+            </button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function closeFavorites() {
+      document.getElementById('favoritesModal').style.display = 'none';
+    }
+
+    function filterByFarmer(farmerId) {
+      const filtered = allListings.filter(l => l.farmerId === farmerId);
+      displayFeed(filtered);
+      closeFavorites();
+      UIUtils.showToast('Filtered by farmer', 'info');
+    }
+
+    // Transactions
+    function openTransactions() {
+      const modal = document.getElementById('transactionsModal');
+      modal.style.display = 'flex';
+
+      const user = AuthSystem.getCurrentUser();
+      const transactions = TransactionSystem.getTransactionsByUser(user.id);
+      const container = document.getElementById('transactionsList');
+
+      if (transactions.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 40px;">No transactions yet</p>';
+      } else {
+        container.innerHTML = transactions.slice().reverse().map(txn => {
+          const listing = allListings.find(l => l.id === txn.listingId);
+          return `
+            <div style="background: var(--light-green); padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--primary-green);">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <p style="font-weight: 600; color: var(--text-dark);">
+                    ${listing ? listing.cropName : 'Unknown'} - ${txn.type.toUpperCase()}
+                  </p>
+                  <p style="font-size: 12px; color: var(--text-light); margin-top: 5px;">
+                    ${UIUtils.formatDate(txn.timestamp)}
+                  </p>
+                </div>
+                <span style="background: var(--primary-green); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                  ✓ Verified
+                </span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-light); margin-top: 8px;">
+                Hash: ${txn.hash.substring(0, 20)}...
+              </p>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function closeTransactions() {
+      document.getElementById('transactionsModal').style.display = 'none';
+    }
+
+    // Update statistics
+    function updateStatistics() {
+      const user = AuthSystem.getCurrentUser();
+      const listings = allListings;
+      const transactions = TransactionSystem.getTransactionsByUser(user.id);
+
+      // Get unique farmers
+      const uniqueFarmers = new Set(listings.map(l => l.farmerId)).size;
+
+      document.getElementById('totalFarmers').textContent = uniqueFarmers;
+      document.getElementById('totalProducts').textContent = listings.length;
+      document.getElementById('myInteractions').textContent = transactions.length;
+      document.getElementById('myFavorites').textContent = likedListings.size;
+    }
+
+    // Logout
+    function handleLogout() {
+      if (confirm('Are you sure you want to logout?')) {
+        AuthSystem.logout();
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', initBuyerPage);
+
+    // Close modals on background click
+    document.addEventListener('click', (e) => {
+      if (e.target.id === 'securityModal') {
+        closSecurityDashboard();
+      }
+      if (e.target.id === 'contactModal') {
+        closeContact();
+      }
+      if (e.target.id === 'favoritesModal') {
+        closeFavorites();
+      }
+      if (e.target.id === 'transactionsModal') {
+        closeTransactions();
+      }
+    });
+  </script>
+</body>
+</html>
